@@ -1,0 +1,17 @@
+gateway:
+  services:
+    hello: http://localhost:8081/api/v1/hello
+    bye: http://localhost:8082/api/v1/bye
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: hello
+          uri: ${gateway.services.hello}
+          predicates:
+            - Path=/api/v1/hello/**
+        - id: bye
+          uri: ${gateway.services.bye}
+          predicates:
+            - Path=/api/v1/bye/**

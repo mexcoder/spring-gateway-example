@@ -1,0 +1,26 @@
+version: "3"
+name: "gw_test"
+services:
+  gateway:
+    container_name: service-gateway
+    build: ./gateway
+    environment:
+      - GATEWAY_SERVICES_HELLO=http://hello-service:8080/api/v1/hello
+      - GATEWAY_SERVICES_BYE=http://bye-Service:8080/api/v1/bye
+    ports:
+     - 8080:8080
+
+  helloService:
+    container_name: hello-service
+    image: "wiremock/wiremock:latest"
+    volumes:
+      - ./mocks/helloService:/home/wiremock
+    entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose"]
+  byeService:
+    container_name: bye-service
+    image: "wiremock/wiremock:latest"
+    volumes:
+      - ./mocks/byeService:/home/wiremock
+    entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose"]
+
+  
