@@ -2,6 +2,9 @@ gateway:
   services:
     hello: http://localhost:8081/api/v1/hello
     bye: http://localhost:8082/api/v1/bye
+    secure: http://localhost:8083/api/v1/secure
+  KeyCloak:
+    uri: http://localhost:8090/realms/test
 
 spring:
   cloud:
@@ -11,7 +14,33 @@ spring:
           uri: ${gateway.services.hello}
           predicates:
             - Path=/api/v1/hello/**
+
         - id: bye
           uri: ${gateway.services.bye}
           predicates:
             - Path=/api/v1/bye/**
+
+        - id: secure
+          uri: ${gateway.services.secure}
+          predicates:
+            - Path=/api/v1/secure/**
+          filters:
+            - TokenRelay=
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: ${gateway.KeyCloak.uri}
+        registration:
+          gateway-client:
+            provider: keycloak
+            client-id: spring-gateway-client
+            user-name-attribute: preferred_username
+#            client-secret: <CLIENT SECRET>
+            scope:
+              - email
+              - profile
+              - roles
+              - openid

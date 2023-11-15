@@ -1,0 +1,1 @@
+this example is derived of the basic example and add authentication on the gateway level using keycloak as an IAM platform and JWT to share the token with the microservices

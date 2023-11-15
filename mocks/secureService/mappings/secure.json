@@ -1,0 +1,10 @@
+{
+    "request": {
+      "method": "GET",
+      "url": "/api/v1/secure"
+    },
+    "response": {
+      "status": 200,
+      "body": "this is a secured endpoint with auth: {{request.headers.authorization}}"
+    }
+  }
