@@ -1,31 +1,47 @@
 gateway:
   services:
-    hello: http://localhost:8081/api/v1/hello
-    bye: http://localhost:8082/api/v1/bye
-    secure: http://localhost:8083/api/v1/secure
+    hello: http://localhost:8081/api/hello/
+    bye: http://localhost:8082/api/bye/
+    secure: http://localhost:8083/api/secure/
+    discoverable: http://localhost:8084/api/discoverable/
   KeyCloak:
     uri: http://localhost:8090/realms/test
 
 spring:
   cloud:
     gateway:
+      discovery:
+        locator:
+          enabled: true
       routes:
         - id: hello
           uri: ${gateway.services.hello}
           predicates:
-            - Path=/api/v1/hello/**
+            - Path=/api/hello/**
 
         - id: bye
           uri: ${gateway.services.bye}
           predicates:
-            - Path=/api/v1/bye/**
+            - Path=/api/bye/**
 
         - id: secure
           uri: ${gateway.services.secure}
           predicates:
-            - Path=/api/v1/secure/**
+            - Path=/api/secure/**
           filters:
             - TokenRelay=
+        - id: discoverable
+          uri: ${gateway.services.discoverable}
+          predicates:
+            - Path=/api/discoverable/**
+
+    consul:
+      discovery:
+        register: false
+        registerHealthCheck: false
+        tags: gateway
+        instanceId: gateway-test
+        hostname: localhost
 
   security:
     oauth2:

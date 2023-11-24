@@ -14,7 +14,7 @@ public class SecurityConfig {
         return http
                 .authorizeExchange(request ->
                         request
-                                .pathMatchers("/api/v1/hello/**", "/api/v1/bye/**")
+                                .pathMatchers("/api/hello/**", "/api/bye/**")
                                 .permitAll()
                                 .anyExchange()
                                 .authenticated()

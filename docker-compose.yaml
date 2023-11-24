@@ -5,9 +5,10 @@ services:
     container_name: service-gateway
     build: ./gateway
     environment:
-      - GATEWAY_SERVICES_HELLO=http://hello-service:8080/api/v1/hello
-      - GATEWAY_SERVICES_BYE=http://bye-Service:8080/api/v1/bye
-      - GATEWAY_SERVICES_SECURE=http://secure-Service:8080/api/v1/secure
+      - GATEWAY_SERVICES_HELLO=lb://hello-service/api/hello
+      - GATEWAY_SERVICES_BYE=lb://bye-Service/api/bye
+      - GATEWAY_SERVICES_SECURE=lb://secure-Service/api/secure
+      - GATEWAY_SERVICES_DISCOVERABLE=lb://discoverable-Service/api/discoverable
     ports:
      - 8080:8080
     depends_on:
@@ -15,31 +16,58 @@ services:
 
   helloService:
     container_name: hello-service
-    image: "wiremock/wiremock:latest"
+    hostname: hello-service
+    image: "wiremock-consul"
+    build:
+      context: ./wiremock
+    environment:
+      - DATACENTER=dc1
     volumes:
       - ./mocks/helloService:/home/wiremock
     depends_on:
       - keycloak
+      - consul
     entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose"]
 
   byeService:
     container_name: bye-service
-    image: "wiremock/wiremock:latest"
+    hostname: bye-service
+    image: "wiremock-consul"
+    build:
+      context: ./wiremock
+    environment:
+      - DATACENTER=dc1
     volumes:
       - ./mocks/byeService:/home/wiremock
     depends_on:
       - keycloak
+      - consul
     entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose"]
 
   secureService:
     container_name: secure-service
-    image: "wiremock/wiremock:latest"
+    hostname: secure-service
+    image: "wiremock-consul"
+    build:
+      context: ./wiremock
+    environment:
+      - DATACENTER=dc1
     volumes:
       - ./mocks/secureService:/home/wiremock
     depends_on:
       - keycloak
+      - consul
     entrypoint: ["/docker-entrypoint.sh", "--global-response-templating", "--disable-gzip", "--verbose"]
 
+  discoverableService:
+    container_name: discoverable-service
+    build: ./discoverableService
+    image: discoverable-service
+    environment:
+      - SPRING_CLOUD_CONSUL_HOST=consul
+    depends_on:
+      - keycloak
+      - consul
 
   keycloak:
     container_name: keycloak
@@ -54,3 +82,13 @@ services:
      - 8090:8080
      - 8443:8443
   
+  consul:
+    container_name: consul
+    image: "hashicorp/consul:latest"
+    # depends_on:
+    #   - keycloak
+    entrypoint: consul agent -server -ui -node=server-1 -bootstrap-expect=1 -client=0.0.0.0 --data-dir /var/consul
+    ports:
+      - 8500:8500
+      - 8600:8600/udp
+      
